@@ -1,57 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "guestbook-ui.fullname" . }}
-  labels:
-{{ include "guestbook-ui.labels" . | indent 4 }}
+  name: guestbook-ui
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "guestbook-ui.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      app: guestbook-ui
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "guestbook-ui.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        app: guestbook-ui
     spec:
-    {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-      serviceAccountName: {{ template "guestbook-ui.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: guestbook-ui
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "gcr.io/heptio-images/ks-guestbook-demo:0.2"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+      - image: gcr.io/heptio-images/ks-guestbook-demo:0.2
+        name: guestbook-ui
+        ports:
+        - containerPort: 80
